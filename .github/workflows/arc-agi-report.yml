@@ -4,11 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     # GitHub Actions cron uses UTC. These are the candidate times for
-    # 09:00 and 21:00 in Europe/Madrid across CET and CEST.
+    # 09:00 in Europe/Madrid across CET and CEST.
     - cron: "0 7 * * *"
     - cron: "0 8 * * *"
-    - cron: "0 19 * * *"
-    - cron: "0 20 * * *"
 
 permissions:
   contents: read
@@ -34,7 +32,7 @@ jobs:
           report_timezone="Europe/Madrid"
           local_hour="$(TZ="$report_timezone" date +%H)"
 
-          if [ "$local_hour" = "09" ] || [ "$local_hour" = "21" ]; then
+          if [ "$local_hour" = "09" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
@@ -49,7 +47,7 @@ jobs:
           echo "Skipping scheduled run."
           echo "Timezone: ${{ steps.schedule_window.outputs.report_timezone }}"
           echo "Local hour: ${{ steps.schedule_window.outputs.local_hour }}"
-          echo "This workflow only runs at 09:00 and 21:00 Europe/Madrid."
+          echo "This workflow only runs at 09:00 Europe/Madrid."
 
       - name: Check out repository
         if: github.event_name != 'schedule' || steps.schedule_window.outputs.run == 'true'
