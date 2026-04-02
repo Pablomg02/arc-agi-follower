@@ -8,6 +8,36 @@ from src.deep_research import DEFAULT_ANTHROPIC_MODEL, ResearchAgent
 
 
 class ResearchAgentTests(unittest.TestCase):
+    @patch.object(
+        ResearchAgent,
+        "_get_dotenv_values",
+        return_value={
+            "TAVILY_API_KEY": "dotenv-tavily-token",
+            "ANTHROPIC_API_KEY": "dotenv-anthropic-token",
+        },
+    )
+    @patch("src.deep_research.anthropic.Anthropic")
+    @patch("src.deep_research.TavilyClient")
+    def test_constructor_prefers_environment_variables_over_dotenv_values(
+        self,
+        tavily_client_class,
+        anthropic_client_class,
+        _get_dotenv_values,
+    ):
+        with patch.dict(
+            os.environ,
+            {
+                "TAVILY_API_KEY": "env-tavily-token",
+                "ANTHROPIC_API_KEY": "env-anthropic-token",
+            },
+            clear=True,
+        ):
+            agent = ResearchAgent()
+
+        self.assertTrue(agent.is_configured())
+        tavily_client_class.assert_called_once_with(api_key="env-tavily-token", timeout=60)
+        anthropic_client_class.assert_called_once_with(api_key="env-anthropic-token")
+
     @patch.dict(os.environ, {}, clear=True)
     @patch.object(ResearchAgent, "_get_dotenv_values", return_value={})
     @patch("src.deep_research.anthropic.Anthropic")

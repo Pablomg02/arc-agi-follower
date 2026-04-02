@@ -123,10 +123,6 @@ This key is used to summarize the raw Tavily search response into the short Span
 
 This means local debugging can rely on `.env`, while CI can inject secrets directly through the environment.
 
-### About `ANTHROPIC_MODEL`
-
-`.env.example` currently includes an `ANTHROPIC_MODEL` placeholder, but the current code path does not read that environment variable yet. The model is currently chosen inside `src/deep_research.py`.
-
 ## Usage
 
 There are currently three practical ways to use the project.
@@ -166,7 +162,7 @@ The workflow lives at `.github/workflows/arc-agi-report.yml` and runs:
 uv run main.py --hours 12
 ```
 
-It is scheduled to run twice per day, at `09:00` and `21:00` in the `Europe/Madrid` timezone.
+It is scheduled to run once per day, at `09:00` in the `Europe/Madrid` timezone.
 
 Because GitHub Actions schedules are defined in UTC, the workflow includes multiple candidate cron entries and then skips the runs that do not match the target local hours.
 
@@ -186,6 +182,8 @@ To enable the news-research section as well, also create:
 
 - `TAVILY_API_KEY`
 - `ANTHROPIC_API_KEY`
+
+If either of those two secrets is missing, the workflow still runs and sends the leaderboard report, but it skips the Tavily + Anthropic news summary.
 
 Under `Variables`, you may optionally create:
 
