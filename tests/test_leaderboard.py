@@ -74,6 +74,39 @@ class KaggleLeaderboardTests(unittest.TestCase):
             ],
         )
 
+    def test_get_top_entries_since_skips_entries_without_submission_date(self):
+        leaderboard = KaggleLeaderboard(
+            [
+                {
+                    "teamId": "1",
+                    "teamName": "Alpha",
+                    "score": "0.50",
+                },
+                {
+                    "teamId": "2",
+                    "teamName": "Beta",
+                    "submissionDate": "2026-03-21 09:30:00",
+                    "score": "0.49",
+                },
+            ]
+        )
+
+        entries = leaderboard.get_top_entries_since(date(2026, 3, 20), 2)
+
+        self.assertEqual(
+            entries,
+            [
+                {
+                    "position": 1,
+                    "rank": 2,
+                    "teamId": "2",
+                    "teamName": "Beta",
+                    "submissionDate": "2026-03-21 09:30:00",
+                    "score": "0.49",
+                }
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

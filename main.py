@@ -44,10 +44,18 @@ def format_current_top_five_section(entries: list[dict[str, str]]) -> str:
     lines = ["Top 5 actual:"]
     for rank, entry in enumerate(entries, start=1):
         lines.append(
-            f'#{rank} {entry["teamName"]} | {entry["score"]} | {entry["submissionDate"].split()[0]}'
+            f'#{rank} {entry["teamName"]} | {entry["score"]} | {_format_submission_date(entry)}'
         )
 
     return "\n".join(lines)
+
+
+def _format_submission_date(entry: dict[str, str]) -> str:
+    submission_date = entry.get("submissionDate")
+    if not submission_date:
+        return "fecha desconocida"
+
+    return submission_date.split()[0]
 
 
 def get_report_now(*, timezone_name: str) -> datetime:

@@ -58,6 +58,9 @@ class KaggleLeaderboard:
 
         for index, entry in enumerate(self.entries[:top_n]):
             submission_datetime = self._parse_submission_datetime(entry)
+            if submission_datetime is None:
+                continue
+
             if submission_datetime > since_datetime:
                 recent_entries.append(
                     {
@@ -69,13 +72,15 @@ class KaggleLeaderboard:
 
         return recent_entries
 
-    def _parse_submission_datetime(self, entry: dict[str, str]) -> datetime:
+    def _parse_submission_datetime(self, entry: dict[str, str]) -> datetime | None:
         submission_date = entry.get("submissionDate")
         if not submission_date:
-            team_name = entry.get("teamName", "<unknown team>")
-            raise ValueError(f"Missing submissionDate for leaderboard entry {team_name}.")
+            return None
 
-        return datetime.fromisoformat(submission_date)
+        try:
+            return datetime.fromisoformat(submission_date)
+        except ValueError:
+            return None
 
     def _normalize_since(self, since: str | date | datetime) -> datetime:
         if isinstance(since, datetime):

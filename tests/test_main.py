@@ -201,6 +201,66 @@ class DailyMessageTests(unittest.TestCase):
             ),
         )
 
+    def test_build_daily_message_handles_missing_submission_date(self):
+        leaderboard = KaggleLeaderboard(
+            [
+                {
+                    "teamId": "1",
+                    "teamName": "Alpha",
+                    "score": "58.10",
+                },
+                {
+                    "teamId": "2",
+                    "teamName": "Beta",
+                    "submissionDate": "2026-03-28 12:00:00",
+                    "score": "57.90",
+                },
+                {
+                    "teamId": "3",
+                    "teamName": "Gamma",
+                    "submissionDate": "2026-03-27 15:30:00",
+                    "score": "57.50",
+                },
+                {
+                    "teamId": "4",
+                    "teamName": "Delta",
+                    "submissionDate": "2026-03-26 20:45:00",
+                    "score": "57.10",
+                },
+                {
+                    "teamId": "5",
+                    "teamName": "Epsilon",
+                    "submissionDate": "2026-03-25 09:00:00",
+                    "score": "56.80",
+                },
+            ]
+        )
+
+        message = build_daily_message(
+            leaderboard,
+            report_end=datetime(2026, 4, 2, 0, 0, 0),
+        )
+
+        self.assertEqual(
+            message,
+            "\n\n".join(
+                [
+                    "ARC-AGI 3 | Resumen diario | 2026-04-02",
+                    "Sin cambios en el top 5 en las ultimas 12 horas.",
+                    "\n".join(
+                        [
+                            "Top 5 actual:",
+                            "#1 Alpha | 58.10 | fecha desconocida",
+                            "#2 Beta | 57.90 | 2026-03-28",
+                            "#3 Gamma | 57.50 | 2026-03-27",
+                            "#4 Delta | 57.10 | 2026-03-26",
+                            "#5 Epsilon | 56.80 | 2026-03-25",
+                        ]
+                    ),
+                ]
+            ),
+        )
+
     def test_report_window_is_fixed_to_12_hours(self):
         self.assertEqual(REPORT_WINDOW_HOURS, 12)
 
