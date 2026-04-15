@@ -10,4 +10,5 @@ dependencies = [
     "pytelegrambotapi>=4.32.0",
     "python-dotenv>=1.2.2",
     "tavily>=1.1.0",
+    "tzdata>=2025.2",
 ]

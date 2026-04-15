@@ -1,6 +1,6 @@
 # arc-agi-follower
 
-`arc-agi-follower` is a small utility for monitoring the ARC-AGI 3 Kaggle leaderboard, enriching the report with a short external-news summary, and sending the result to Telegram.
+`arc-agi-follower` is a small utility for monitoring the ARC-AGI 3 Kaggle leaderboard and sending the result to Telegram.
 
 Its current purpose is intentionally narrow: this repository exists to track ARC-AGI 3. While it could later be adapted into a more general tool for other Kaggle competitions, that is not the current goal. Even though a small amount of configuration already points in that direction, the project is documented and maintained specifically for ARC-AGI 3 for now.
 
@@ -18,14 +18,10 @@ The project is functional, but still fairly pragmatic and rough around the edges
 When executed, the script:
 
 1. Fetches the ARC-AGI 3 leaderboard from Kaggle.
-2. Detects whether there has been movement in the top 5 during the last `N` hours.
-3. Searches for recent ARC-AGI 3 / ARC Prize news with Tavily.
-4. Summarizes the retrieved news with Anthropic, prioritizing the last `N` hours and falling back to the last few days when needed.
-5. Builds a summary message that includes leaderboard movement, the current top 5, and the optional news section.
-6. Prints the message to stdout.
-7. Sends the message to a Telegram chat.
-
-If the research step fails or is not configured, the script still sends the leaderboard report without the news section.
+2. Detects whether there has been movement in the top 5 during the last `12` hours.
+3. Builds a summary message with the recent movement and the current top 5.
+4. Prints the message to stdout.
+5. Sends the message to a Telegram chat.
 
 ## Installation
 
@@ -35,7 +31,7 @@ Install the project dependencies with:
 uv sync
 ```
 
-This installs the Python dependencies as well as the Kaggle CLI used by the project. The current dependency set also includes the Tavily and Anthropic clients used by the news-research flow.
+This installs the Python dependencies as well as the Kaggle CLI used by the project.
 
 Then create your local environment file:
 
@@ -135,17 +131,10 @@ This is the simplest way to test the workflow locally, validate credentials, or 
 uv run main.py
 ```
 
-By default, the script checks the last `24` hours. To change the reporting window:
-
-```bash
-uv run main.py --hours 12
-```
-
 This will:
 
 - load `.env` automatically when needed,
 - fetch the leaderboard,
-- try to fetch and summarize recent external news,
 - generate the summary,
 - print it to the console,
 - and send it to Telegram.
@@ -159,7 +148,7 @@ This is the expected day-to-day setup if you want the report to run on a schedul
 The workflow lives at `.github/workflows/arc-agi-report.yml` and runs:
 
 ```bash
-uv run main.py --hours 12
+uv run main.py
 ```
 
 It is scheduled to run once per day, at `09:00` in the `Europe/Madrid` timezone.
@@ -178,21 +167,12 @@ Under `Secrets`, create at least:
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
 
-To enable the news-research section as well, also create:
-
-- `TAVILY_API_KEY`
-- `ANTHROPIC_API_KEY`
-
-If either of those two secrets is missing, the workflow still runs and sends the leaderboard report, but it skips the Tavily + Anthropic news summary.
-
 Under `Variables`, you may optionally create:
 
-- `ARC_AGI_REPORT_HOURS`
 - `ARC_AGI_COMPETITION`
 
-If those optional variables are not defined:
+If that optional variable is not defined:
 
-- the workflow uses a default reporting window of `12` hours,
 - the default competition is `arc-prize-2026-arc-agi-3`.
 
 Although `ARC_AGI_COMPETITION` exists as a technical override, it should not be read as a sign that the repository is already intended as a general-purpose leaderboard follower. The project remains focused on ARC-AGI 3.
@@ -203,7 +183,7 @@ The intended usage is straightforward:
 
 - use `main.py` when you want to test locally or trigger a report manually,
 - use GitHub Actions when you want continuous automated tracking,
-- use `debug_news_flow.py` when you want to inspect only the Tavily -> Anthropic news pipeline.
+- use `debug_news_flow.py` only if you still want to inspect the separate Tavily -> Anthropic news pipeline tooling.
 
 At this stage, the repository should be understood as a practical ARC-AGI 3 utility rather than a reusable framework, a polished Telegram bot, or a generic Kaggle competition monitoring platform.
 
@@ -213,7 +193,6 @@ The code already supports a few optional settings:
 
 - `ARC_AGI_REPORT_TIMEZONE`: timezone used to evaluate the report window. Default: `Europe/Madrid`.
 - `ARC_AGI_COMPETITION`: Kaggle competition slug. Default: `arc-prize-2026-arc-agi-3`.
-- `--hours`: CLI argument used to limit the top-5 movement window. Default: `24` for manual execution.
 - `debug_news_flow.py --query "...":` override the default Tavily query for news debugging.
 - `debug_news_flow.py --skip-claude`: print the Anthropic request payload without actually calling Anthropic.
 - `debug_news_flow.py --max-results N`: control how many Tavily results are fetched during debugging.

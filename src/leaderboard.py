@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 """Helpers to inspect Kaggle leaderboard data."""
 
 from datetime import date, datetime, time
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
-from .kaggle_api import KaggleAPI
+if TYPE_CHECKING:
+    from .kaggle_api import KaggleAPI
 
 
 class LeaderboardEntryNotFoundError(IndexError):
